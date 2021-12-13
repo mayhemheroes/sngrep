@@ -822,15 +822,15 @@ sip_set_match_expression(const char *expr, int insensitive, int invert)
     calls.match_invert = invert;
 
 #ifdef WITH_PCRE
-    const char *re_err = NULL;
-    int32_t err_offset;
-    int32_t pflags = PCRE_UNGREEDY | PCRE_DOTALL;
+    int re_err = 0;
+    PCRE2_SIZE err_offset = 0;
+    uint32_t pflags = PCRE2_UNGREEDY | PCRE2_CASELESS;
 
     if (insensitive)
-        pflags |= PCRE_CASELESS;
+        pflags |= PCRE2_CASELESS;
 
     // Check if we have a valid expression
-    calls.match_regex = pcre_compile(expr, pflags, &re_err, &err_offset, 0);
+    calls.match_regex = pcre2_compile((PCRE2_SPTR) expr, PCRE2_ZERO_TERMINATED, pflags, &re_err, &err_offset, NULL);
     return calls.match_regex == NULL;
 #else
     int cflags = REG_EXTENDED;
@@ -858,9 +858,12 @@ sip_check_match_expression(const char *payload)
         return 1;
 
 #ifdef WITH_PCRE
-    switch (pcre_exec(calls.match_regex, 0, payload, strlen(payload), 0, 0, 0, 0)) {
-        case PCRE_ERROR_NOMATCH:
-            return 1 == calls.match_invert;
+    pcre2_match_data *match_data = pcre2_match_data_create_from_pattern(calls.match_regex, NULL);
+    int ret = pcre2_match(calls.match_regex, (PCRE2_SPTR) payload, (PCRE2_SIZE) strlen(payload), 0, 0, match_data, NULL);
+    pcre2_match_data_free(match_data);
+
+    if (ret == PCRE2_ERROR_NOMATCH) {
+        return 1 == calls.match_invert;
     }
 
     return 0 == calls.match_invert;

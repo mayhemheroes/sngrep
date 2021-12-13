@@ -42,7 +42,7 @@
 
 #include "config.h"
 #ifdef WITH_PCRE
-#include <pcre.h>
+#include <pcre2.h>
 #else
 #include <regex.h>
 #endif
@@ -81,7 +81,7 @@ struct filter {
     char *expr;
 #ifdef WITH_PCRE
     //! The filter compiled expression
-    pcre *regex;
+    pcre2_code *regex;
 #else
     //! The filter compiled expression
     regex_t regex;

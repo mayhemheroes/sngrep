@@ -36,7 +36,7 @@
 #include <stdbool.h>
 #include <regex.h>
 #ifdef WITH_PCRE
-#include <pcre.h>
+#include <pcre2.h>
 #endif
 #include "sip_call.h"
 #include "vector.h"
@@ -140,7 +140,7 @@ struct sip_call_list {
     const char *match_expr;
 #ifdef WITH_PCRE
     //! Compiled match expression
-    pcre *match_regex;
+    pcre2_code *match_regex;
 #else
     //! Compiled match expression
     regex_t match_regex;

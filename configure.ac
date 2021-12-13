@@ -180,12 +180,18 @@ AC_ARG_WITH([pcre],
 )
 
 AS_IF([test "x$WITH_PCRE" == "xyes"], [
-	AC_CHECK_HEADER([pcre.h], [], [
-	    AC_MSG_ERROR([ You need libpcre development files installed to compile with pcre support.])
-	])
-	AC_CHECK_LIB([pcre], [pcre_exec], [], [
-	    AC_MSG_ERROR([ You need libpcre library installed to compile with pcre support.])
-	])
+    AC_DEFINE([PCRE2_CODE_UNIT_WIDTH], [8], [Required for including pcre2.h])
+    AC_SUBST(PCRE2_CODE_UNIT_WIDTH, 8)
+    m4_ifdef([PKG_CHECK_MODULES], [
+        PKG_CHECK_MODULES([PCRE], [libpcre2-8])
+    ], [
+	    AC_CHECK_HEADER([pcre2.h], [], [
+	        AC_MSG_ERROR([ You need libpcre2 development files installed to compile with pcre support.])
+	    ])
+	    AC_CHECK_LIB([pcre2-8], [pcre2_compile_8], [], [
+	        AC_MSG_ERROR([ You need libpcre2 library installed to compile with pcre support.])
+	    ])
+    ])
 	AC_DEFINE([WITH_PCRE],[],[Compile With Perl Compatible regular expressions support])
 ], [])
 
@@ -229,6 +235,7 @@ AS_IF([test "x$USE_EEP" == "xyes"], [
 
 
 # Conditional Source inclusion 
+AM_CONDITIONAL([WITH_PCRE], [test "x$WITH_PCRE" == "xyes"])
 AM_CONDITIONAL([WITH_GNUTLS], [test "x$WITH_GNUTLS" == "xyes"])
 AM_CONDITIONAL([WITH_OPENSSL], [test "x$WITH_OPENSSL" == "xyes"])
 AM_CONDITIONAL([USE_EEP], [test "x$USE_EEP" == "xyes"])
