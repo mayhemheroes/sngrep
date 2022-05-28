@@ -1,6 +1,7 @@
 project: rnshah9/sngrep
 target: sngrep
-tests: null
+tests:
+  - file://tests/ipip.pcap
 
 cmds:
-  - cmd: /repo/sngrep -I @@ -N
+  - cmd: /repo/src/sngrep -I @@ -N
