@@ -1,0 +1,6 @@
+project: rnshah9/sngrep
+target: sngrep
+tests: null
+
+cmds:
+  - cmd: /repo/sngrep -I @@ -N
