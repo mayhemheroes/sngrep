@@ -1,6 +1,6 @@
-project: rnshah9/sngrep
+project: sngrep
 target: sngrep
-tests:
+testsuite:
   - file://tests/ipip.pcap
 
 cmds:
