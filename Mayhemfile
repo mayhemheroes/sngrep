@@ -4,4 +4,4 @@ testsuite:
   - file://tests/ipip.pcap
 
 cmds:
-  - cmd: /repo/src/sngrep -I @@ -N
+  - cmd: /install/bin/sngrep -I @@ -N
