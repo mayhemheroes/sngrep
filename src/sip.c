@@ -149,6 +149,7 @@ sip_init(int limit, int only_calls, int no_incomplete)
     calls.only_calls = only_calls;
     calls.ignore_incomplete = no_incomplete;
     calls.last_index = 0;
+    calls.call_count_unrotated = 0;
 
     // Create a vector to store calls
     calls.list = vector_create(200, 50);
@@ -438,6 +439,7 @@ sip_check_packet(packet_t *packet)
     if (newcall) {
         // Append this call to the call list
         vector_append(calls.list, call);
+        ++calls.call_count_unrotated;
     }
 
     // Mark the list as changed
@@ -465,6 +467,12 @@ int
 sip_calls_count()
 {
     return vector_count(calls.list);
+}
+
+int
+sip_calls_count_unrotated()
+{
+    return calls.call_count_unrotated;
 }
 
 vector_iter_t
@@ -832,6 +840,17 @@ sip_set_match_expression(const char *expr, int insensitive, int invert)
     // Check if we have a valid expression
     calls.match_regex = pcre_compile(expr, pflags, &re_err, &err_offset, 0);
     return calls.match_regex == NULL;
+#elif defined(WITH_PCRE2)
+    int re_err = 0;
+    PCRE2_SIZE err_offset = 0;
+    uint32_t pflags = PCRE2_UNGREEDY | PCRE2_CASELESS;
+
+    if (insensitive)
+        pflags |= PCRE2_CASELESS;
+
+    // Check if we have a valid expression
+    calls.match_regex = pcre2_compile((PCRE2_SPTR) expr, PCRE2_ZERO_TERMINATED, pflags, &re_err, &err_offset, NULL);
+    return calls.match_regex == NULL;
 #else
     int cflags = REG_EXTENDED;
 
@@ -861,6 +880,16 @@ sip_check_match_expression(const char *payload)
     switch (pcre_exec(calls.match_regex, 0, payload, strlen(payload), 0, 0, 0, 0)) {
         case PCRE_ERROR_NOMATCH:
             return 1 == calls.match_invert;
+    }
+
+    return 0 == calls.match_invert;
+#elif defined(WITH_PCRE2)
+    pcre2_match_data *match_data = pcre2_match_data_create_from_pattern(calls.match_regex, NULL);
+    int ret = pcre2_match(calls.match_regex, (PCRE2_SPTR) payload, (PCRE2_SIZE) strlen(payload), 0, 0, match_data, NULL);
+    pcre2_match_data_free(match_data);
+
+    if (ret == PCRE2_ERROR_NOMATCH) {
+        return 1 == calls.match_invert;
     }
 
     return 0 == calls.match_invert;

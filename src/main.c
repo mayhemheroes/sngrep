@@ -327,6 +327,8 @@ main(int argc, char* argv[])
         }
     }
 
+    setup_sigterm_handler();
+
 #if defined(WITH_GNUTLS) || defined(WITH_OPENSSL)
     // Set capture decrypt key file
     capture_set_keyfile(keyfile);
@@ -381,8 +383,11 @@ main(int argc, char* argv[])
             return 1;
     }
 
-    if (outfile) {
-        capture_set_dumper(dump_open(outfile));
+    if (outfile)
+    {
+        ino_t dump_inode;
+        pcap_dumper_t *dumper = dump_open(outfile, &dump_inode);
+        capture_set_dumper(dumper, dump_inode);
     }
 
     // Remove Input files vector
@@ -440,13 +445,13 @@ main(int argc, char* argv[])
         ui_wait_for_input();
     } else {
         setbuf(stdout, NULL);
-        while(capture_is_running()) {
+        while(capture_is_running() && !was_sigterm_received()) {
             if (!quiet)
-                printf("\rDialog count: %d", sip_calls_count());
+                printf("\rDialog count: %d", sip_calls_count_unrotated());
             usleep(500 * 1000);
         }
         if (!quiet)
-            printf("\rDialog count: %d\n", sip_calls_count());
+            printf("\rDialog count: %d\n", sip_calls_count_unrotated());
     }
 
     // Capture deinit

@@ -37,6 +37,8 @@
 #include <regex.h>
 #ifdef WITH_PCRE
 #include <pcre.h>
+#elif defined(WITH_PCRE2)
+#include <pcre2.h>
 #endif
 #include "sip_call.h"
 #include "vector.h"
@@ -130,6 +132,8 @@ struct sip_call_list {
     //! Call-Ids hash table
     htable_t *callids;
 
+    //! Full count of all captured calls, regardless of rotation
+    int call_count_unrotated;
     // Max call limit
     int limit;
     //! Only store dialogs starting with INVITE
@@ -141,6 +145,9 @@ struct sip_call_list {
 #ifdef WITH_PCRE
     //! Compiled match expression
     pcre *match_regex;
+#elif defined(WITH_PCRE2)
+    //! Compiled match expression
+    pcre2_code *match_regex;
 #else
     //! Compiled match expression
     regex_t match_regex;
@@ -253,6 +260,14 @@ sip_calls_has_changed();
  */
 int
 sip_calls_count();
+
+/**
+ * @brief Getter for full count of calls since program start
+ *
+ * @return full number of calls since program start, regardless of rotation
+ */
+int
+sip_calls_count_unrotated();
 
 /**
  * @brief Return an iterator of call list
