@@ -1,0 +1,6 @@
+project: sngrep
+target: strtrim
+
+cmds:
+  - cmd: /fuzz_strtrim
+    libfuzzer: true

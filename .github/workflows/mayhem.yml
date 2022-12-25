@@ -59,7 +59,8 @@ jobs:
       fail-fast: false
       matrix:
         mayhemfile:
-          - mayhem/Mayhemfile
+          - mayhem/Mayhemfile_strtrim
+          - mayhem/Mayhemfile_sngrep
 
     steps:
       - uses: actions/checkout@v3
