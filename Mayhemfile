@@ -1,0 +1,7 @@
+project: sngrep
+target: sngrep
+testsuite:
+  - file://tests/ipip.pcap
+
+cmds:
+  - cmd: /install/bin/sngrep -I @@ -N
